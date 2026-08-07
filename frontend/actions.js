@@ -1,6 +1,6 @@
 //-------- Configuration
 
-window.API_URL = "https://locahost:3000/v1";
+window.API_URL = "https://locahost:60";
 
 const API_URL = window.API_URL || "/api";
 
