@@ -63,7 +63,7 @@ async function envoyerPouls() {
   let attente = 5000;
   const declares = aDeclarer;
   try {
-    const reponse = await fetch(`${TABLEAU}/api/pouls`, {
+    const reponse = await fetch(`${TABLEAU}/api/pulse`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -82,7 +82,7 @@ async function envoyerPouls() {
     // suivant.
     aDeclarer -= declares;
     const ordre = await reponse.json();
-    attente = ordre.prochain_pouls_ms || 5000;
+    attente = ordre.prochain_pulse_ms || 5000;
     if (ordre.coups_a_encaisser > 0) await encaisser(ordre.coups_a_encaisser);
   } catch (erreur) {
     console.error("[pouls] tableau injoignable :", erreur.message);
