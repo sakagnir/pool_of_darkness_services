@@ -1,39 +1,42 @@
-import pg from "pg";
-import { config } from "./config.js";
+import mariadb from "mariadb";
+import { config } from "../config.js";
 
-const { Pool } = pg;
 
-export const pool = new Pool({
-    host: config.database.host,
-    port: config.database.port,
-    database: config.database.database,
-    user: config.database.user,
-    password: config.database.password,
-
-    max: 10,
-
-    idleTimeoutMillis: 30000,
-
-    connectionTimeoutMillis: 3000
+export const pool = mariadb.createPool({
+  host: config.database.host || "db",
+  port: Number(config.database.port || 3306),
+  user: config.database.user || "karaoke",
+  password: config.database.password || "karaoke",
+  database: config.database.database || "karaoke",
+  connectionLimit: Number(config.database.connectionLimit || 10)
 });
 
-export async function query(text, params = []) {
-    return pool.query(text, params);
+export async function query(sql, params = []) {
+  let connection;
+
+  try {
+    connection = await pool.getConnection();
+    return await connection.query(sql, params);
+  }
+  finally {
+    if (connection) {
+      connection.release();
+    }
+  }
 }
 
-//-- constrol for checking dtabase
-export async function checkDatabase() {
-    try {
-        await pool.query("SELECT 1");
-        return true;
+export async function testConnection() {
+  let connection;
+
+  try {
+    connection = await pool.getConnection();
+    await connection.query("SELECT 1");
+    return true;
+  } finally {
+    if (connection) {
+      connection.release();
     }
-    catch (error) {
-        console.error(
-            "[DB] Base de données inaccessible:",
-            error.message
-        );
-        return false;
-    }
+  }
 }
 
-
+export default pool;
