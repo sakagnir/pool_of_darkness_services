@@ -49,15 +49,15 @@ export async function subscribeToQueue(req, res) {
   try {
     await connection.beginTransaction();
 
-    const [positionRows] = await connection.execute(`
+    const positionRows = await connection.execute(`
       SELECT COALESCE(MAX(position), 0) + 1 AS prochaine_position
       FROM file_karaoke
       WHERE statut = 'EN_ATTENTE'
     `);
 
-    const position = positionRows[0].prochaine_position;
+    const position = Number(positionRows[0].prochaine_position);
 
-    const [result] = await connection.execute(
+    const result = await connection.execute(
       `
       INSERT INTO file_karaoke
         (nom, chanson, artiste, statut, position)
@@ -72,7 +72,7 @@ export async function subscribeToQueue(req, res) {
     return res.status(201).json({
       message: "Inscription réussie",
       participant: {
-        id: result.insertId,
+        id: Number(result.insertId),
         nom,
         chanson,
         artiste: artiste || null,
@@ -106,7 +106,7 @@ export async function CompleteTour(req, res) {
   try {
     await connection.beginTransaction();
 
-    const [rows] = await connection.execute(
+    const rows = await connection.execute(
       `
       SELECT id, position
       FROM file_karaoke
@@ -184,7 +184,7 @@ export async function startSinging(req, res) {
       WHERE statut = 'EN_COURS'
     `);
 
-    const [result] = await connection.execute(
+    const result = await connection.execute(
       `
       UPDATE file_karaoke
       SET statut = 'EN_COURS'
