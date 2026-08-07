@@ -47,7 +47,7 @@ jobs:
             -h 127.0.0.1 \
             -u karaoke \
             -pkaraoke \
-            karaoke < backend/db/init.sql
+            karaoke < database/mariadb/init.sql
 
       - name: Run tests
         run: npm test
