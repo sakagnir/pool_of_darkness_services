@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎤 File Karaoké</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+    <div>
+        <h1>🎤 File Karaoké</h1>
+        <p>Inscris-toi et prépare-toi à chanter !</p>
+    </div>
+
+    <div id="api-status" class="status status-loading">
+        Vérification...
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- Notification -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- Inscription -->
+    <section class="card">
+        <h2>🎶 S'inscrire dans la file</h2>
+
+        <form id="karaoke-form">
+
+            <div class="form-group">
+                <label for="nom">Ton nom</label>
+                <input
+                    type="text"
+                    id="nom"
+                    name="nom"
+                    placeholder="Ex : Alice"
+                    maxlength="50"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="chanson">Chanson</label>
+                <input
+                    type="text"
+                    id="chanson"
+                    name="chanson"
+                    placeholder="Ex : Bohemian Rhapsody"
+                    maxlength="100"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="artiste">Artiste</label>
+                <input
+                    type="text"
+                    id="artiste"
+                    name="artiste"
+                    placeholder="Ex : Queen"
+                    maxlength="100"
+                    required
+                >
+            </div>
+
+            <button type="submit" id="submit-button">
+                🎤 Rejoindre la file
+            </button>
+
+        </form>
+    </section>
+
+    <!-- File actuelle -->
+    <section class="card">
+        <div class="section-header">
+            <div>
+                <h2>📋 File actuelle</h2>
+                <p id="queue-count">Chargement...</p>
+            </div>
+
+            <button id="refresh-button" class="secondary-button">
+                ↻ Actualiser
+            </button>
+        </div>
+
+        <div id="queue-container">
+            <div class="loading">
+                Chargement de la file...
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification des prochains -->
+    <section class="card">
+        <h2>🔔 Les 3 prochains</h2>
+
+        <div id="next-container">
+            <div class="loading">
+                Chargement...
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>🎤 File Karaoké — Projet DevOps</p>
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
