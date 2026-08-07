@@ -1,8 +1,8 @@
 import express from "express";
 
-import fileRoutes from "./routes/fileRoutes.js";
+import queueRoutes from "./routes/queueRoutes.js";
 import healthRoutes from "./routes/healthRoutes.js";
-import travailRoutes from "./routes/travailRoutes.js";
+import workRoutes from "./routes/workRoutes.js";
 import pavillonRoutes from "./routes/pavillonRoutes.js";
 
 import {
@@ -55,9 +55,9 @@ app.use((req, res, next) => {
 // Routes
 // --------------------------------
 
-app.use(fileRoutes);
+app.use(queueRoutes);
 app.use(healthRoutes);
-app.use(travailRoutes);
+app.use(workRoutes);
 app.use(pavillonRoutes);
 
 
