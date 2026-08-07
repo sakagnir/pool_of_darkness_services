@@ -41,6 +41,14 @@ jobs:
         run: npm ci
         working-directory: backend
 
+      - name: Init database
+        run: |
+          mysql \
+            -h 127.0.0.1 \
+            -u karaoke \
+            -pkaraoke \
+            karaoke < backend/db/init.sql
+
       - name: Run tests
         run: npm test
         working-directory: backend
