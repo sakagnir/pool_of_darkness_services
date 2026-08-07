@@ -1,2 +1,21 @@
-database
-/**/node_modules
+# Données locales
+database/
+
+# Dépendances
+**/node_modules
+**/dist
+**/.cache
+
+# Secrets — jamais dans le repo (J5 : un git log -p qui les montre = fuite)
+**/.env
+**/.env.*
+!.env.example
+**/deploy_key
+**/*.pem
+**/*.key
+!**/*.pub
+
+# Logs & temporaires
+*.log
+*.tmp
+.DS_Store
