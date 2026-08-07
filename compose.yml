@@ -1,0 +1,5 @@
+services:
+  karaoke-front:
+    build: /frontend/.
+    ports:
+      - 50:80
