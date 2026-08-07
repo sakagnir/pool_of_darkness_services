@@ -1,6 +1,5 @@
-// src/controllers/healthController.js
 
-import pool from "../config/database.js";
+import pool from "../db/db.js";
 
 export async function health(req, res) {
   try {

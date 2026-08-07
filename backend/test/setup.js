@@ -1,6 +1,6 @@
 //-- Mariadb config
 
-import pool from "../src/config/database.js";
+import pool from "../db/db";
 
 beforeAll(async()=>{
     await pool.execute(`
