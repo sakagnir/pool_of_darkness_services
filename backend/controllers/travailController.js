@@ -12,8 +12,7 @@ import pool from "../db/db.js";
  * - MariaDB read
  * - calculation
  * - aggregation
- */
-export async function work(req, res) {
+ */export async function work(req, res) {
   const debut = performance.now();
 
   try {
@@ -27,9 +26,16 @@ export async function work(req, res) {
 
     let total = 0;
 
-    for (const ligne of rows) {
-      total += Number(ligne.total);
-    }
+    const statistiques = rows.map((ligne) => {
+      const totalStatut = Number(ligne.total);
+
+      total += totalStatut;
+
+      return {
+        statut: ligne.statut,
+        total: totalStatut
+      };
+    });
 
     const duree = Math.round(
       performance.now() - debut
@@ -38,11 +44,11 @@ export async function work(req, res) {
     return res.status(200).json({
       ok: true,
       totalParticipants: total,
-      statistiques: rows,
+      statistiques,
       duree_ms: duree,
     });
-  }
-  catch (error) {
+
+  } catch (error) {
     console.error("[travail] Erreur :", error);
 
     return res.status(503).json({

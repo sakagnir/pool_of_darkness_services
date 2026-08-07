@@ -3,11 +3,11 @@ export const config = {
 
     database: {
         host: process.env.DB_HOST || "db",
-        port: Number(process.env.DB_PORT || 5432),
+        port: Number(process.env.DB_PORT || 3306),
         database: process.env.DB_NAME || "karaoke",
-        user: process.env.DB_USER || "postgres",
-        password: process.env.DB_PASSWORD || "",
-        connectionLimit:  Number(process.env.DB_CONNECTION_LIMIT || 10)
+        user: process.env.DB_USER || "karaoke",
+        password: process.env.DB_PASSWORD || "karaoke",
+        connectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 10)
     },
 
     tableauUrl: process.env.TABLEAU_URL || "",
