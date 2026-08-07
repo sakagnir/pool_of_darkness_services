@@ -35,10 +35,11 @@ docker run -d --privileged \
   -v vm-prod-data:/var/lib/docker \
   vm-prod
 
-# 3. Vérifier qu'elle répond (docker interne vivant) — la clé privée deploy_key
-#    vit sur le poste du membre « Livraison » (et dans les secrets du repo)
+# 3. Vérifier qu'elle répond (docker interne vivant) — clé privée sur TON poste
 ssh -i deploy_key -p 2222 root@localhost 'docker ps'
 ```
+
+> ⚠️ **Le bon chemin de clé** : la clé privée `deploy_key` n'est pas dans ce dossier. Selon où elle vit, utilise le chemin complet, ex. `ssh -i ~/Code/DevOps/todo-api/deploy_key -p 2222 root@localhost 'docker ps'`.
 
 > ⚠️ **gotchas de J3** :
 > - le DNS du conteneur peut casser → relancer avec `--dns 8.8.8.8 --dns 1.1.1.1` si `docker pull` échoue avec « no route to host » ;
@@ -48,7 +49,7 @@ ssh -i deploy_key -p 2222 root@localhost 'docker ps'
 
 ```bash
 docker start vm-prod
-ssh -i deploy/deploy_key -p 2222 root@localhost 'docker ps'
+ssh -i deploy_key -p 2222 root@localhost 'docker ps'
 ```
 
 ## À noter pour l'équipe
