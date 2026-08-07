@@ -1,0 +1,89 @@
+# compose.yml — la flotte en PRODUCTION (déployée sur vm-prod)
+# Les images sont tirées du registry (tag = sha du commit), pas construites ici.
+# Remplacer les images par <REGISTRY_USER>/pool-<service>:${TAG} au moment du push.
+
+name: pool-darkness
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-karaoke}
+      MARIADB_DATABASE: ${DB_NAME:-karaoke}
+      MARIADB_USER: ${DB_USER:-karaoke}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-karaoke}
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  karaoke-back:
+    image: ${REGISTRY_USER:-sakagnir}/pool-karaoke-back:${TAG}
+    restart: unless-stopped
+    ports:
+      # vm-prod expose déjà 3000 (todo-api J3) → on publie le back sur 3100
+      - 3100:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Pouls — le battement de cœur vers le tableau de la classe
+      TABLEAU_URL: ${TABLEAU_URL:-}
+      GROUPE: ${GROUPE:-}
+      COULEUR: ${COULEUR:-#000000}
+      SERVICE: api
+      VERSION: ${TAG:-dev}
+      URL_INTERNE: http://karaoke-back:3000
+      # Base de données
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-karaoke}
+      DB_PASSWORD: ${DB_PASSWORD:-karaoke}
+      DB_NAME: ${DB_NAME:-karaoke}
+
+  karaoke-front:
+    image: ${REGISTRY_USER:-sakagnir}/pool-karaoke-front:${TAG}
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    environment:
+      # Pouls — le battement de cœur vers le tableau de la classe
+      TABLEAU_URL: ${TABLEAU_URL:-}
+      GROUPE: ${GROUPE:-}
+      COULEUR: ${COULEUR:-#000000}
+      SERVICE: front
+      VERSION: ${TAG:-dev}
+      URL_INTERNE: http://karaoke-front:8080
+      # L'URL de l'API que le front sert via /config
+      API_URL: http://localhost:3100
+
+  karaoke-annexe:
+    image: ${REGISTRY_USER:-sakagnir}/pool-karaoke-annexe:${TAG}
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Pouls — le battement de cœur vers le tableau de la classe
+      TABLEAU_URL: ${TABLEAU_URL:-}
+      GROUPE: ${GROUPE:-}
+      COULEUR: ${COULEUR:-#000000}
+      SERVICE: annexe
+      VERSION: ${TAG:-dev}
+      URL_INTERNE: http://karaoke-annexe:8000
+      # Base de données
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-karaoke}
+      DB_PASSWORD: ${DB_PASSWORD:-karaoke}
+      DB_NAME: ${DB_NAME:-karaoke}
+
+volumes:
+  db-data:
