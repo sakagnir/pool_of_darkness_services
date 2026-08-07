@@ -66,33 +66,56 @@ jobs:
         run: npm test
 
   build:
+    name: Build and push docker image
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Add front tag before push
-      run: docker tag j5-karaoke-front:${{ github.sha }} sakagnir/j5-karaoke-front:${{ github.sha }}
-    
-    - name: Add back tag before push
-      run: docker tag j5-karaoke-back:${{ github.sha }} sakagnir/j5-karaoke-back:${{ github.sha }}
-
-
-    - name: Build the front Docker image
-      run: docker build . --file Dockerfile --tag j5-karaoke-front:${{ github.sha }}
-
-    - name: Build the back Docker image
-      run: docker build . --file Dockerfile --tag j5-karaoke-back:${{github.sha }}
-
 
     - uses: docker/login-action@v3
       with: 
         username: sakagnir
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # - name: Add front tag before push
+    #   run: docker tag j5-karaoke-front:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/j5-karaoke-front:${{ github.sha }}
+    
+    # - name: Add back tag before push
+    #   run: docker tag j5-karaoke-back:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/j5-karaoke-back:${{ github.sha }}
+
+    - name: Check if front image already exist
+      id: check_image
+      run: |
+        if docker manifest inspect \
+          ${{ secrets.DOCKERHUB_USERNAME }}/karaoke-front:${{ github.sha }} > dev/null 2>&1
+        then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Build and push front image if needed
+      if: steps.check_image.outputs.exists == 'false'
+      uses: docker/build-push-action@v6
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/j5-karaoke-front:${{ github.sha }}
+
+
+
+    # - name: Build the front Docker image
+    #   run: docker build . --file Dockerfile --tag j5-karaoke-front:${{ github.sha }}
+
+    # - name: Build the back Docker image
+    #   run: docker build . --file Dockerfile --tag j5-karaoke-back:${{github.sha }}
         
     
-    - name: Push front on Docker Hub
-      run: docker push sakagnir/j5-karaoke-front:${{ github.sha }}
+    # - name: Push front on Docker Hub
+    #   run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/j5-karaoke-front:${{ github.sha }}
     
-    - name: Push back on Docker Hub
-      run: docker push sakagnir/j5-karaoke-back:${{ github.sha }}
+    # - name: Push back on Docker Hub
+    #   run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/j5-karaoke-back:${{ github.sha }}
