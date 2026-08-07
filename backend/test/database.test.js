@@ -1,5 +1,4 @@
-import pool from "../db/db";
-
+import pool from "../db/db.js";
 
 test(
     "La base contient la file",
