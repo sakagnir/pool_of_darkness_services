@@ -20,11 +20,13 @@ Une **maquette de serveur de production** : un conteneur qui embarque **un serve
 
 ## Construire & lancer `vm-prod`
 
-Depuis la racine du repo de groupe :
+Depuis le dossier `deploy/` (le contexte de build doit contenir le `deploy_key.pub` — le `Dockerfile.vm` fait `COPY deploy_key.pub` à la racine du contexte) :
 
 ```bash
+cd deploy
+
 # 1. Construire l'image de la machine cible
-docker build -f deploy/Dockerfile.vm -t vm-prod .
+docker build -f Dockerfile.vm -t vm-prod .
 
 # 2. La lancer (SSH :2222, app :3000, Prometheus :9090, Grafana :3001)
 docker run -d --privileged \
@@ -33,8 +35,9 @@ docker run -d --privileged \
   -v vm-prod-data:/var/lib/docker \
   vm-prod
 
-# 3. Vérifier qu'elle répond (docker interne vivant)
-ssh -i deploy/deploy_key -p 2222 root@localhost 'docker ps'
+# 3. Vérifier qu'elle répond (docker interne vivant) — la clé privée deploy_key
+#    vit sur le poste du membre « Livraison » (et dans les secrets du repo)
+ssh -i deploy_key -p 2222 root@localhost 'docker ps'
 ```
 
 > ⚠️ **gotchas de J3** :
