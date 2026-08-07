@@ -7,7 +7,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "npm jest",
+    "test": "jest",
     "dev": "node --watch src/dev/server.js"
   },
   "dependencies": {
