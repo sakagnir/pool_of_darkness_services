@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
     ports:
       # 3000 est occupé par vm-prod (machine cible J3) → on publie sur 3100
-      - 3100:3000
+      - 3100:60
     depends_on:
       db:
         condition: service_healthy

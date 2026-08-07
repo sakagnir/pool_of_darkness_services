@@ -1,18 +1,12 @@
 //-------- Configuration
-// L'URL de l'API est servie par le serveur front (/config), jamais en dur ici.
-let API_URL = "/api";
 
-async function chargerConfig() {
-  try {
-    const reponse = await fetch("/config");
-    if (reponse.ok) {
-      const config = await reponse.json();
-      API_URL = config.apiUrl || API_URL;
-    }
-  } catch (e) {
-    console.error("config indisponible, API_URL par défaut :", API_URL);
-  }
-}
+const PORT = 3100;
+const HOST = "localhost"
+const PROTOCOL = "http"
+
+window.API_URL = `${PROTOCOL}://${HOST}:${PORT}`;
+
+const API_URL = window.API_URL || "/api";
 
 
 // ----------------------------
