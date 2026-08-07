@@ -17,7 +17,7 @@ export async function work(req, res) {
   const debut = performance.now();
 
   try {
-    const [rows] = await pool.execute(`
+    const rows = await pool.execute(`
       SELECT
         statut,
         COUNT(*) AS total

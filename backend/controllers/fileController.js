@@ -7,7 +7,7 @@ import pool from "../db/db.js";
  */
 export async function getQueue(req, res) {
   try {
-    const [rows] = await pool.execute(`
+    const rows = await pool.execute(`
       SELECT
         id,
         nom,
@@ -232,7 +232,7 @@ export async function startSinging(req, res) {
 export async function getProchains(req,res){
     try {
         // current signer
-        const [actuel] = await pool.execute(`
+        const actuel = await pool.execute(`
             SELECT
                 id,
                 nom,
@@ -244,7 +244,7 @@ export async function getProchains(req,res){
         `);
 
         // - 3 next
-        const [nexts] = await pool.execute(`
+        const nexts = await pool.execute(`
             SELECT
                 id,
                 nom,
