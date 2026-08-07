@@ -60,13 +60,13 @@ jobs:
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Créer /srv/flotte
         run: |
           ssh -o StrictHostKeyChecking=no \
             -p ${{ secrets.DEPLOY_PORT }} \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            root@${{ secrets.DEPLOY_HOST }} \
             "mkdir -p /srv/flotte/db"
 
       - name: Copier le compose de prod + le schéma
@@ -74,17 +74,17 @@ jobs:
           scp -o StrictHostKeyChecking=no \
             -P ${{ secrets.DEPLOY_PORT }} \
             ./deploy/compose.yml \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/srv/flotte/compose.yml
+            root@${{ secrets.DEPLOY_HOST }}:/srv/flotte/compose.yml
           scp -o StrictHostKeyChecking=no \
             -P ${{ secrets.DEPLOY_PORT }} \
             ./db/init.sql \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/srv/flotte/db/init.sql
+            root@${{ secrets.DEPLOY_HOST }}:/srv/flotte/db/init.sql
 
       - name: Écrire le .env sur la machine (TAG = sha du commit)
         run: |
           ssh -o StrictHostKeyChecking=no \
             -p ${{ secrets.DEPLOY_PORT }} \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            root@${{ secrets.DEPLOY_HOST }} \
             "cd /srv/flotte && \
              cat > .env <<'ENVEOF'
 REGISTRY_USER=${{ secrets.DOCKERHUB_USERNAME }}
@@ -101,7 +101,7 @@ ENVEOF"
         run: |
           ssh -o StrictHostKeyChecking=no \
             -p ${{ secrets.DEPLOY_PORT }} \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            root@${{ secrets.DEPLOY_HOST }} \
             "cd /srv/flotte && docker compose pull && docker compose up -d"
 
       - name: Vérifier que la flotte est debout
