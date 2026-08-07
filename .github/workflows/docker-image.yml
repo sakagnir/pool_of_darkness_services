@@ -7,6 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
+
   test-backend:
     runs-on: ubuntu-latest
     services:
@@ -27,7 +28,6 @@ jobs:
           --health-timeout=5s
           --health-retries=5
  
- 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,7 +38,6 @@ jobs:
           node-version: 22
  
       - name: Install dependencies
-        working-directory: backend
         run: npm install
  
       - name: Check repository structure
@@ -65,9 +64,11 @@ jobs:
           DB_PASSWORD: karaoke
         run: npm test
 
-  build:
+
+
+  build-frontend:
     name: Build and push docker image
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: github.ref == 'refs/heads/main'
 
     steps:
@@ -75,17 +76,11 @@ jobs:
 
     - uses: docker/login-action@v3
       with: 
-        username: sakagnir
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    # - name: Add front tag before push
-    #   run: docker tag j5-karaoke-front:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/j5-karaoke-front:${{ github.sha }}
-    
-    # - name: Add back tag before push
-    #   run: docker tag j5-karaoke-back:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/j5-karaoke-back:${{ github.sha }}
-
     - name: Check if front image already exist
-      id: check_image
+      id: check_front_image
       run: |
         if docker manifest inspect \
           ${{ secrets.DOCKERHUB_USERNAME }}/karaoke-front:${{ github.sha }} > dev/null 2>&1
@@ -96,7 +91,7 @@ jobs:
         fi
 
     - name: Build and push front image if needed
-      if: steps.check_image.outputs.exists == 'false'
+      if: steps.check_front_image.outputs.exists == 'false'
       uses: docker/build-push-action@v6
       with:
         context: ./frontend
@@ -104,6 +99,89 @@ jobs:
         push: true
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/j5-karaoke-front:${{ github.sha }}
+
+
+
+  build-backend:
+    name: Build and push docker image
+    runs-on: ubuntu-latest
+    needs: build-frontend
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: docker/login-action@v3
+      with: 
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+    - name: Check if Backend image already exist
+      id: check_backend_image
+      run: |
+        if docker manifest inspect \
+          ${{ secrets.DOCKERHUB_USERNAME }}/karaoke-front:${{ github.sha }} > dev/null 2>&1
+        then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Build and push Backend image if needed
+      if: steps.check_backend_image.outputs.exists == 'false'
+      uses: docker/build-push-action@v6
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/j5-karaoke-front:${{ github.sha }}
+
+
+
+  build-frontend:
+    name:  Deploy
+    runs-on: self-hosted
+    needs: build-backend
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Test SSH
+        run: |
+          ssh -vvv \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "echo OK"
+
+
+      - name: Copy compose file
+        run: |
+              scp \
+              -P ${{ secrets.DEPLOY_PORT }} \
+              ./todo/compose.yml \
+              ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/srv/todo/compose.yml
+
+      - name: Deploy application
+        run: |
+          ssh \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd /srv/todo && docker compose down && TAG=${{ github.sha }} docker compose up -d"
+
+      - name: Health check
+        run: |
+          ssh \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "curl http://localhost:3000/health"
+
 
 
 
