@@ -28,6 +28,9 @@ services:
     ports:
       # vm-prod expose déjà 3000 (todo-api J3) → on publie le back sur 3100
       - 3100:3000
+    volumes:
+      # Le pavillon vit dans un volume partagé : il survit au redéploiement
+      - pavillon-data:/data
     depends_on:
       db:
         condition: service_healthy
@@ -51,6 +54,9 @@ services:
     restart: unless-stopped
     ports:
       - 8080:8080
+    volumes:
+      # Le pavillon (lu par le pouls du front) vient du volume partagé
+      - pavillon-data:/data
     environment:
       # Pouls — le battement de cœur vers le tableau de la classe
       TABLEAU_URL: ${TABLEAU_URL:-}
@@ -67,6 +73,9 @@ services:
     restart: unless-stopped
     ports:
       - 8000:8000
+    volumes:
+      # Le pavillon (lu par le pouls de l'annexe) vient du volume partagé
+      - pavillon-data:/data
     depends_on:
       db:
         condition: service_healthy
@@ -87,3 +96,4 @@ services:
 
 volumes:
   db-data:
+  pavillon-data:
