@@ -41,13 +41,19 @@ jobs:
         working-directory: backend
         run: npm install
  
+      - name: Check repository structure
+        run: |
+          pwd
+          ls -la
+          ls -la database
+          
       - name: Create database schema
         run: |
           mysql \
             -h 127.0.0.1 \
             -u karaoke \
             -pkaraoke \
-            karaoke < database/init.sql
+            karaoke < ./database/init.sql
  
       - name: Run integration tests
         working-directory: backend
