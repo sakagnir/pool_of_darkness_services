@@ -5,15 +5,18 @@ import healthRoutes from "./routes/healthRoutes.js";
 import workRoutes from "./routes/workRoutes.js";
 import pavillonRoutes from "./routes/pavillonRoutes.js";
 
+
 import {
     metrics
 } from "./metrics.js";
+
 
 import {
     httpRequestsTotal,
     httpErrorsTotal,
     httpRequestDuration
 } from "./metrics.js";
+
 
 const app = express();
 

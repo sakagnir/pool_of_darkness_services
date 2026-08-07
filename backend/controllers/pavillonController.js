@@ -10,7 +10,7 @@ const PAVILLON_FICHIER =
 /**
  * POST /pavillon
  */
-export async function definirPavillon(req, res) {
+export async function setPavillon(req, res) {
   const message = req.body?.message;
 
   if (!message || typeof message !== "string") {
@@ -74,7 +74,8 @@ export async function getPavillon(req, res) {
     return res.status(200).json({
       pavillon: contenu.trim(),
     });
-  } catch (error) {
+  }
+  catch (error) {
     if (error.code === "ENOENT") {
       return res.status(200).json({
         pavillon: "",

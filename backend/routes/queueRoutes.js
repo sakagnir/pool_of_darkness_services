@@ -10,7 +10,7 @@ import {
 
 const router = express.Router();
 
-router.get("/file", getFile);
+router.get("/file", getQueue);
 router.post("/file", subscribeToQueue);
 router.post("/file/:id/passer", CompleteTour);
 router.delete("/file/:id", startSinging);
