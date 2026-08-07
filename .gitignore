@@ -6,7 +6,7 @@ database/
 **/dist
 **/.cache
 
-# Secrets — jamais dans le repo (J5 : un git log -p qui les montre = fuite)
+# Secrets — jamais dans le repo
 **/.env
 **/.env.*
 !.env.example

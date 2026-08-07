@@ -23,10 +23,13 @@ RUN apk add --no-cache openssh-server && ssh-keygen -A
 # Dossier où SSH cherche les clés autorisées.
 RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
 
-# La clé PUBLIQUE du déploiement, la seule qui aura le droit d'entrer.
-# La clé privée, elle, ne quitte jamais le poste / la pipeline.
-COPY deploy_key.pub /root/.ssh/authorized_keys
-RUN chmod 600 /root/.ssh/authorized_keys
+# Une clé PUBLIQUE par membre de l'équipe : toutes les *.pub présentes ici sont
+# installées. Les clés privées, elles, ne quittent jamais le poste / la pipeline.
+COPY *.pub /tmp/cles/
+# Concaténer toutes les clés publiques dans authorized_keys (une ligne par clé).
+RUN cat /tmp/cles/*.pub > /root/.ssh/authorized_keys \
+    && chmod 600 /root/.ssh/authorized_keys \
+    && rm -rf /tmp/cles
 
 # sshd doit démarrer AVANT le daemon Docker, sinon il ne démarre jamais.
 RUN printf '#!/bin/sh\n/usr/sbin/sshd\nexec dockerd-entrypoint.sh "$@"\n' > /start.sh \
