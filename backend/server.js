@@ -108,8 +108,6 @@ app.use((error, req, res, next) => {
     });
 });
 
-app.listen(60, () => {
-    console.log('serveur lancé');
-});
+
 
 export default app;
