@@ -16,11 +16,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
 const SERVICE = process.env.SERVICE || "front";
 const VERSION = process.env.VERSION || "dev";
+// L'URL de l'API, injectée par le compose (jamais en dur dans le code)
+const API_URL = process.env.API_URL || "http://localhost:3100";
 
 const app = express();
 
 // Fichiers statiques de la page web
 app.use(express.static(__dirname));
+
+// Expose la config au front (API_URL) sans URL en dur dans le JS du client
+app.get("/config", (req, res) => {
+  res.json({ apiUrl: API_URL });
+});
 
 // Route de santé — le service répond
 app.get("/health", (req, res) => {

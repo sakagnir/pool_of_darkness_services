@@ -29,6 +29,27 @@ app.use(express.json({
     limit: "10kb"
 }));
 
+// CORS : autorise le front (servi depuis un autre port/hôte) à appeler l'API.
+// En J5, le front et l'API sont des services distincts → sans CORS, le
+// navigateur bloque les appels (erreur "blocked by CORS policy").
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization"
+    );
+
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+
+    next();
+});
+
 
 // -------------------------------------------------------
 // Métriques HTTP

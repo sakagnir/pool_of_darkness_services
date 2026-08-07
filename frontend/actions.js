@@ -1,8 +1,18 @@
 //-------- Configuration
+// L'URL de l'API est servie par le serveur front (/config), jamais en dur ici.
+let API_URL = "/api";
 
-window.API_URL = "https://locahost:60";
-
-const API_URL = window.API_URL || "/api";
+async function chargerConfig() {
+  try {
+    const reponse = await fetch("/config");
+    if (reponse.ok) {
+      const config = await reponse.json();
+      API_URL = config.apiUrl || API_URL;
+    }
+  } catch (e) {
+    console.error("config indisponible, API_URL par défaut :", API_URL);
+  }
+}
 
 
 // ----------------------------
@@ -421,6 +431,7 @@ setInterval(async () => {
 
 async function init() {
 
+    await chargerConfig();
     await checkApiHealth();
     await loadQueue();
     await loadNext();
