@@ -1,43 +1,84 @@
+name: pool-darkness
+
 services:
-  karaoke-front:
-    build: /frontend/.
-    ports:
-      - 50:80
-    
-  karaoke-back:
-    build: /backend/.
-    ports:
-      - 60:50
-    env_file:
-      - .env
-    networks:
-      - backend-network
-  
   db:
-    build: .
     image: mariadb:11
-    container_name: karaoke-db
-    restart: always
-
+    restart: unless-stopped
     environment:
-      MARIADB_DATABASE: karaoke
-      MARIADB_USER: karaoke
-      MARIADB_PASSWORD: karaoke
-      MARIADB_ROOT_PASSWORD: root
-
-    ports:
-      - "3306:3306"
-
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-karaoke}
+      MARIADB_DATABASE: ${DB_NAME:-karaoke}
+      MARIADB_USER: ${DB_USER:-karaoke}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-karaoke}
     volumes:
-      - mariadb_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-    
-    networks:
-      - backend-network
+      - db-data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
-networks:
-  backend-network:
-    driver: bridge
+  karaoke-back:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      # 3000 est occupé par vm-prod (machine cible J3) → on publie sur 3100
+      - 3100:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Pouls — le battement de cœur vers le tableau de la classe
+      TABLEAU_URL: ${TABLEAU_URL:-}
+      GROUPE: ${GROUPE:-}
+      COULEUR: ${COULEUR:-#888888}
+      SERVICE: api
+      VERSION: ${VERSION:-dev}
+      URL_INTERNE: http://karaoke-back:3000
+      # Base de données
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-karaoke}
+      DB_PASSWORD: ${DB_PASSWORD:-karaoke}
+      DB_NAME: ${DB_NAME:-karaoke}
+
+  karaoke-front:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    environment:
+      # Pouls — le battement de cœur vers le tableau de la classe
+      TABLEAU_URL: ${TABLEAU_URL:-}
+      GROUPE: ${GROUPE:-}
+      COULEUR: ${COULEUR:-#888888}
+      SERVICE: front
+      VERSION: ${VERSION:-dev}
+      URL_INTERNE: http://karaoke-front:8080
+
+  karaoke-annexe:
+    build: ./annexe
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Pouls — le battement de cœur vers le tableau de la classe
+      TABLEAU_URL: ${TABLEAU_URL:-}
+      GROUPE: ${GROUPE:-}
+      COULEUR: ${COULEUR:-#888888}
+      SERVICE: annexe
+      VERSION: ${VERSION:-dev}
+      URL_INTERNE: http://karaoke-annexe:8000
+      # Base de données
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-karaoke}
+      DB_PASSWORD: ${DB_PASSWORD:-karaoke}
+      DB_NAME: ${DB_NAME:-karaoke}
 
 volumes:
-  mariadb_data:
+  db-data:
+

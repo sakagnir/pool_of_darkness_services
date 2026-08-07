@@ -1,3 +1,7 @@
-FROM nginx:alpine
+FROM node:alpine
 WORKDIR /frontend
-COPY . /usr/share/nginx/html
+COPY package*.json ./
+RUN npm ci
+COPY . /frontend/
+EXPOSE 8080
+CMD [ "node", "server.js" ]
