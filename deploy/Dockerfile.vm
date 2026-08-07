@@ -1,38 +1,19 @@
-# ============================================================
-# Dockerfile.vm — la machine de production, en maquette (J3, phase 2)
-#
-# Une "vraie" machine de prod coûte de l'argent et demande un hébergeur :
-# on la remplace par une maquette fidèle. Du point de vue de la pipeline,
-# tout est identique : une adresse, un port, une clé, un utilisateur,
-# un Docker à l'autre bout.
-#
-# L'isolation est le point clé : le Docker de cette machine ne voit PAS
-# les conteneurs de la machine hôte (et réciproquement). Une panne en
-# "production" ne touche donc jamais l'environnement de développement.
-# ============================================================
 
-# Un Docker complet qui tourne DANS un conteneur : c'est ce qui donne à
-# la machine cible son propre daemon, indépendant du daemon de l'hôte.
 FROM docker:28-dind
 
-# openssh-server : le programme qui écoute les connexions SSH entrantes.
-# ssh-keygen -A génère les clés d'hôte du serveur SSH (obligatoire pour
-# qu'il puisse démarrer).
+
 RUN apk add --no-cache openssh-server && ssh-keygen -A
 
-# Dossier où SSH cherche les clés autorisées.
 RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
 
-# Une clé PUBLIQUE par membre de l'équipe : toutes les *.pub présentes ici sont
-# installées. Les clés privées, elles, ne quittent jamais le poste / la pipeline.
 COPY *.pub /tmp/cles/
-# Concaténer toutes les clés publiques dans authorized_keys (une ligne par clé).
+
 RUN cat /tmp/cles/*.pub > /root/.ssh/authorized_keys \
     && chmod 600 /root/.ssh/authorized_keys \
     && rm -rf /tmp/cles
 
-# sshd doit démarrer AVANT le daemon Docker, sinon il ne démarre jamais.
 RUN printf '#!/bin/sh\n/usr/sbin/sshd\nexec dockerd-entrypoint.sh "$@"\n' > /start.sh \
     && chmod +x /start.sh
 
+    
 ENTRYPOINT ["/start.sh"]
