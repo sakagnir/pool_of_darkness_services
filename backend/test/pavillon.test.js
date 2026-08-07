@@ -1,26 +1,21 @@
 import request from "supertest";
+import app from "../server.js";
 
-import app from "../src/app.js";
+describe("Pavillon persistant", () => {
+  test("écrire puis lire un pavillon", async () => {
+    const texte = "On chante jusqu'au bout";
 
+    const writeResponse = await request(app)
+      .post("/pavillon")
+      .send({ message: texte });
 
-describe(
-    "Pavillon persistant",
-    ()=>{
+    expect(writeResponse.statusCode).toBe(201);
+    expect(writeResponse.body.pavillon).toBe(texte);
 
-        test(
-        "Ecrire un pavillon",
-        async()=>{
-            const response = await request(app).post("/pavillon").send({ message: "On chante jusqu'au bout"});
-            expect(response.statusCode).toBe(201);
-        });
+    const readResponse = await request(app)
+      .get("/pavillon");
 
-
-        test(
-            "Lire le pavillon",
-            async()=>{
-                const response = await request(app).get("/pavillon");
-                expect(response.body.message).toBe("On chante jusqu'au bout");
-            }
-        )
-    }
-);
+    expect(readResponse.statusCode).toBe(200);
+    expect(readResponse.body.pavillon).toBe(texte);
+  });
+});
