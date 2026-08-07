@@ -1,11 +1,11 @@
 import express from "express";
 
 import {
-    travail
+    work
 } from "../controllers/travailController.js";
 
 const router = express.Router();
 
-router.get("/travail", travail);
+router.get("/travail", work);
 
 export default router;
