@@ -39,7 +39,13 @@ jobs:
  
       - name: Install dependencies
         run: npm install
- 
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: karaoke
+          DB_PASSWORD: karaoke
+          DB_NAME: karaoke
+
       - name: Check repository structure
         run: |
           pwd
@@ -156,33 +162,23 @@ jobs:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Test SSH
+        shell: powershell
         run: |
-          ssh -vvv \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "echo OK"
+          ssh -vvv -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "echo OK"
 
 
       - name: Copy compose file
+        shell: powershell
         run: |
-              scp \
-              -P ${{ secrets.DEPLOY_PORT }} \
-              ./todo/compose.yml \
-              ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/srv/todo/compose.yml
+              scp -P ${{ secrets.DEPLOY_PORT }} ./todo/compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/srv/todo/compose.yml
 
       - name: Deploy application
         run: |
-          ssh \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "cd /srv/todo && docker compose down && TAG=${{ github.sha }} docker compose up -d"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd /srv/todo && docker compose down && TAG=${{ github.sha }} docker compose up -d"
 
       - name: Health check
         run: |
-          ssh \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "curl http://localhost:3000/health"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "curl http://localhost:3000/health"
 
 
 
