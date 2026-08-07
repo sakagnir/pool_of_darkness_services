@@ -1,0 +1,290 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f8;
+    color: #222;
+}
+
+.header {
+    background: #222;
+    color: white;
+    padding: 25px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+}
+
+.header p {
+    margin: 0;
+    color: #ccc;
+}
+
+.container {
+    width: min(1000px, 92%);
+    margin: 30px auto;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card h2 {
+    margin-top: 0;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #555;
+}
+
+button {
+    border: none;
+    border-radius: 7px;
+    padding: 12px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#submit-button {
+    width: 100%;
+    background: #222;
+    color: white;
+    font-weight: bold;
+}
+
+#submit-button:hover {
+    background: #444;
+}
+
+#submit-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.secondary-button {
+    background: #eee;
+    color: #222;
+}
+
+.secondary-button:hover {
+    background: #ddd;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 18px;
+    border-bottom: 1px solid #eee;
+}
+
+.queue-item:last-child {
+    border-bottom: none;
+}
+
+.position {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #222;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.queue-info {
+    flex: 1;
+}
+
+.queue-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.queue-song {
+    color: #555;
+    margin-top: 4px;
+}
+
+.queue-artist {
+    color: #888;
+    font-size: 0.9rem;
+    margin-top: 3px;
+}
+
+.next-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.next-item {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 18px;
+    text-align: center;
+}
+
+.next-position {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.next-name {
+    font-weight: bold;
+}
+
+.next-song {
+    color: #666;
+    margin-top: 5px;
+}
+
+.notification {
+    padding: 15px 18px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.notification.success {
+    background: #dff5e5;
+    color: #176b2c;
+}
+
+.notification.error {
+    background: #fde2e2;
+    color: #9b1c1c;
+}
+
+.notification.info {
+    background: #e3f0ff;
+    color: #174a7c;
+}
+
+.hidden {
+    display: none;
+}
+
+.status {
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.status-online {
+    background: #dff5e5;
+    color: #176b2c;
+}
+
+.status-offline {
+    background: #fde2e2;
+    color: #9b1c1c;
+}
+
+.status-loading {
+    background: #eee;
+    color: #555;
+}
+
+.loading {
+    text-align: center;
+    padding: 30px;
+    color: #777;
+}
+
+.empty {
+    text-align: center;
+    padding: 30px;
+    color: #777;
+}
+
+.error-box {
+    background: #fde2e2;
+    color: #9b1c1c;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.pass-button {
+    background: #222;
+    color: white;
+}
+
+.pass-button:hover {
+    background: #444;
+}
+
+footer {
+    text-align: center;
+    color: #777;
+    padding: 25px;
+}
+
+@media (max-width: 700px) {
+
+    .header {
+        padding: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .next-list {
+        grid-template-columns: 1fr;
+    }
+
+    .queue-item {
+        flex-wrap: wrap;
+    }
+}
