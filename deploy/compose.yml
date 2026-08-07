@@ -1,3 +1,7 @@
+# compose.yml — la flotte en PRODUCTION (déployée sur vm-prod)
+# Les images sont tirées du registry (tag = sha du commit), pas construites ici.
+# Remplacer les images par <REGISTRY_USER>/pool-<service>:${TAG} au moment du push.
+
 name: pool-darkness
 
 services:
@@ -19,24 +23,24 @@ services:
       retries: 10
 
   karaoke-back:
-    build: ./backend
+    image: ${REGISTRY_USER:-sakagnir}/pool-karaoke-back:${TAG}
     restart: unless-stopped
     ports:
-      # 3000 est occupé par vm-prod (machine cible J3) → on publie sur 3100
+      # vm-prod expose déjà 3000 (todo-api J3) → on publie le back sur 3100
       - 3100:3000
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       # Le pavillon vit dans un volume partagé : il survit au redéploiement
       - pavillon-data:/data
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       # Pouls — le battement de cœur vers le tableau de la classe
       TABLEAU_URL: ${TABLEAU_URL:-}
       GROUPE: ${GROUPE:-}
-      COULEUR: ${COULEUR:-#888888}
+      COULEUR: ${COULEUR:-#000000}
       SERVICE: api
-      VERSION: ${VERSION:-dev}
+      VERSION: ${TAG:-dev}
       URL_INTERNE: http://karaoke-back:3000
       # Base de données
       DB_HOST: db
@@ -46,7 +50,7 @@ services:
       DB_NAME: ${DB_NAME:-karaoke}
 
   karaoke-front:
-    build: ./frontend
+    image: ${REGISTRY_USER:-sakagnir}/pool-karaoke-front:${TAG}
     restart: unless-stopped
     ports:
       - 8080:8080
@@ -57,29 +61,31 @@ services:
       # Pouls — le battement de cœur vers le tableau de la classe
       TABLEAU_URL: ${TABLEAU_URL:-}
       GROUPE: ${GROUPE:-}
-      COULEUR: ${COULEUR:-#888888}
+      COULEUR: ${COULEUR:-#000000}
       SERVICE: front
-      VERSION: ${VERSION:-dev}
+      VERSION: ${TAG:-dev}
       URL_INTERNE: http://karaoke-front:8080
+      # L'URL de l'API que le front sert via /config
+      API_URL: http://localhost:3100
 
   karaoke-annexe:
-    build: ./annexe
+    image: ${REGISTRY_USER:-sakagnir}/pool-karaoke-annexe:${TAG}
     restart: unless-stopped
     ports:
       - 8000:8000
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       # Le pavillon (lu par le pouls de l'annexe) vient du volume partagé
       - pavillon-data:/data
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       # Pouls — le battement de cœur vers le tableau de la classe
       TABLEAU_URL: ${TABLEAU_URL:-}
       GROUPE: ${GROUPE:-}
-      COULEUR: ${COULEUR:-#888888}
+      COULEUR: ${COULEUR:-#000000}
       SERVICE: annexe
-      VERSION: ${VERSION:-dev}
+      VERSION: ${TAG:-dev}
       URL_INTERNE: http://karaoke-annexe:8000
       # Base de données
       DB_HOST: db
@@ -91,4 +97,3 @@ services:
 volumes:
   db-data:
   pavillon-data:
-

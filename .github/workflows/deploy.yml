@@ -1,0 +1,119 @@
+name: Deploy flotte
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  # ---------------------------------------------------------
+  # Build & push des 3 images (front, back, annexe) sur Docker Hub
+  # ---------------------------------------------------------
+  build:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & push front
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pool-karaoke-front:${{ github.sha }}
+
+      - name: Build & push back
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pool-karaoke-back:${{ github.sha }}
+
+      - name: Build & push annexe
+        uses: docker/build-push-action@v6
+        with:
+          context: ./annexe
+          file: ./annexe/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pool-karaoke-annexe:${{ github.sha }}
+
+  # ---------------------------------------------------------
+  # Déploiement sur la machine cible (vm-prod) en SSH
+  # ---------------------------------------------------------
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Créer /srv/flotte
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            root@${{ secrets.DEPLOY_HOST }} \
+            "mkdir -p /srv/flotte/db"
+
+      - name: Copier le compose de prod + le schéma
+        run: |
+          scp -o StrictHostKeyChecking=no \
+            -P ${{ secrets.DEPLOY_PORT }} \
+            ./deploy/compose.yml \
+            root@${{ secrets.DEPLOY_HOST }}:/srv/flotte/compose.yml
+          scp -o StrictHostKeyChecking=no \
+            -P ${{ secrets.DEPLOY_PORT }} \
+            ./db/init.sql \
+            root@${{ secrets.DEPLOY_HOST }}:/srv/flotte/db/init.sql
+
+      - name: Écrire le .env sur la machine (TAG = sha du commit)
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            root@${{ secrets.DEPLOY_HOST }} \
+            "cd /srv/flotte && \
+             cat > .env <<'ENVEOF'
+REGISTRY_USER=${{ secrets.DOCKERHUB_USERNAME }}
+TAG=${{ github.sha }}
+TABLEAU_URL=https://services-battle.vercel.app
+GROUPE=Pool of Darkness
+COULEUR=#000000
+DB_USER=karaoke
+DB_PASSWORD=karaoke
+DB_NAME=karaoke
+ENVEOF"
+
+      - name: Remplacer la flotte (pull + up)
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            root@${{ secrets.DEPLOY_HOST }} \
+            "cd /srv/flotte && docker compose pull && docker compose up -d"
+
+      - name: Vérifier que la flotte est debout
+        run: |
+          for i in $(seq 1 15); do
+            if curl -sf http://${{ secrets.DEPLOY_HOST }}:3100/sante > /dev/null 2>&1 \
+               && curl -sf http://${{ secrets.DEPLOY_HOST }}:8080/health > /dev/null 2>&1 \
+               && curl -sf http://${{ secrets.DEPLOY_HOST }}:8000/health > /dev/null 2>&1; then
+              echo "✅ Flotte debout (tentative $i)";
+              exit 0;
+            fi
+            sleep 2;
+          done
+          echo "❌ Un service ne répond pas après 30 s";
+          exit 1
