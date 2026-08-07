@@ -1,5 +1,5 @@
 
-import pool from "../config/database.js";
+import pool from "../db/db.js";
 
 /**
  * GET /file
@@ -38,7 +38,7 @@ export async function getQueue(req, res) {
 export async function subscribeToQueue(req, res) {
   const { nom, chanson, artiste } = req.body;
 
-  if (!nom || !chanson) {
+  if (!nom || !chanson ||  !artiste) {
     return res.status(400).json({
       error: "Le nom et la chanson sont obligatoires",
     });
